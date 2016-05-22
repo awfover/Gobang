@@ -1,0 +1,10 @@
+bin
+dll
+ipch
+Lib
+Temp
+UnicodeDebug
+UnicodeRelease
+build
+.vs
+*.sdf

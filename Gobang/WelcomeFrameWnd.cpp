@@ -1,10 +1,9 @@
 #include "WelcomeFrameWnd.h"
 
 
-
 CWelcomeFrameWnd::CWelcomeFrameWnd(CGobangManager *pGobangManager)
 {
-	this->m_pGobangManager = pGobangManager;
+	m_pGobangManager = pGobangManager;
 }
 
 

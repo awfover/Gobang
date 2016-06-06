@@ -120,7 +120,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Base.h" />
     <ClInclude Include="GameFrameWnd.h" />
+    <ClInclude Include="GameUserUI.h" />
     <ClInclude Include="GobangManager.h" />
     <ClInclude Include="LobbyFrameWnd.h" />
     <ClInclude Include="StdAfx.h" />
@@ -128,10 +130,13 @@
     <ClInclude Include="WelcomeFrameWnd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Base.cpp" />
     <ClCompile Include="GameFrameWnd.cpp" />
+    <ClCompile Include="GameUserUI.cpp" />
     <ClCompile Include="GobangApp.cpp" />
     <ClCompile Include="GobangManager.cpp" />
     <ClCompile Include="LobbyFrameWnd.cpp" />
+    <ClCompile Include="Util.cpp" />
     <ClCompile Include="WelcomeFrameWnd.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

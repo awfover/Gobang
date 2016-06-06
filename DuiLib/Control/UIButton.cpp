@@ -70,7 +70,7 @@ namespace DuiLib
 				else m_uButtonState &= ~UISTATE_PUSHED;
 				Invalidate();
 			}
-			return;
+			// return;
 		}
 		if( event.Type == UIEVENT_BUTTONUP )
 		{

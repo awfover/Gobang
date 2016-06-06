@@ -700,6 +700,10 @@ void CControlUI::DoEvent(TEventUI& event)
             return;
         }
     }
+	if (event.Type == UIEVENT_MOUSEMOVE)
+	{
+		m_pManager->SendNotify(this, DUI_MSGTYPE_MOUSEMOVE, event.wParam, event.lParam);
+	}
 
     if( m_pParent != NULL ) m_pParent->DoEvent(event);
 }

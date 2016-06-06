@@ -1,9 +1,11 @@
 #include "GameFrameWnd.h"
 
 
-
-CGameFrameWnd::CGameFrameWnd()
+CGameFrameWnd::CGameFrameWnd(CGobangManager *pGobangManager) :
+	m_pUser(NULL),
+	m_pRival(NULL)
 {
+	m_pGobangManager = pGobangManager;
 }
 
 
@@ -15,6 +17,16 @@ LPCTSTR CGameFrameWnd::GetWindowClassName() const
 void CGameFrameWnd::OnFinalMessage(HWND hWnd)
 {
 	delete this;
+}
+
+CControlUI* CGameFrameWnd::CreateControl(LPCTSTR pstrClass)
+{
+	MessageBox(NULL, pstrClass, NULL, NULL);
+	if (_tcsicmp(pstrClass, L"GameUser") == 0)
+	{
+		return new CGameUserUI();
+	}
+	return NULL;
 }
 
 void CGameFrameWnd::Notify(TNotifyUI &msg)
@@ -40,6 +52,59 @@ void CGameFrameWnd::Notify(TNotifyUI &msg)
 			return;
 		}
 	}
+	if (msg.sType == L"mousemove")
+	{
+		if (IsCurrentPointAvailable(msg)) {
+			ShowWaitingPiece(msg);
+		}
+		else
+		{
+			HideWaitingPiece();
+		}
+	}
+	if (msg.sType == L"click")
+	{
+		CControlUI* pControl = static_cast<CControlUI*>(m_PaintManager.FindControl(msg.ptMouse));
+		RECT rcWrapper = static_cast<CControlUI*>(m_PaintManager.FindControl(L"BoardWrapper"))->GetPos();
+		RECT rcBoard = static_cast<CControlUI*>(m_PaintManager.FindControl(L"Board"))->GetPos();
+
+		const LONG dwStart = 27;
+		const LONG dwInterval = 39;
+		const LONG dwOffset = 30;
+
+		if ((msg.ptMouse.x >= rcBoard.left) && (msg.ptMouse.x <= rcBoard.right) && (msg.ptMouse.y >= rcBoard.top) && (msg.ptMouse.y <= rcBoard.bottom))
+		{
+			LONG rtLeft = msg.ptMouse.x - rcWrapper.left;
+			LONG rtTop = msg.ptMouse.y - rcWrapper.top;
+
+			UINT dx = (UINT)((rtLeft - dwStart) * 1.0 / dwInterval + 0.5);
+			UINT dy = (UINT)((rtTop - dwStart) * 1.0 / dwInterval + 0.5);
+
+			LONG ptLeft = dx * dwInterval + dwStart;
+			LONG ptTop = dy * dwInterval + dwStart;
+
+			if ((abs(rtLeft - ptLeft) <= dwOffset) && (abs(rtTop - ptTop) <= dwOffset)) {
+				CControlUI* pWhitePiece = static_cast<CControlUI*>(m_PaintManager.FindControl(L"WhitePiece"));
+				LONG dwPieceWidth = pWhitePiece->GetWidth();
+				LONG dwPieceHeight = pWhitePiece->GetHeight();
+
+				RECT rcPiece;
+				rcPiece.left = rcWrapper.left + ptLeft - dwPieceWidth / 2;
+				rcPiece.top = rcWrapper.top + ptTop - dwPieceHeight / 2;
+				rcPiece.right = rcPiece.left + dwPieceWidth;
+				rcPiece.bottom = rcPiece.top + dwPieceHeight;
+				pWhitePiece->SetPos(rcPiece);
+			}
+		}
+	}
+}
+
+void CGameFrameWnd::InitWindow()
+{
+	CenterWindow();
+
+	m_pUser = static_cast<CGameUserUI*>(m_PaintManager.FindControl(L"User"));
+	m_pRival = static_cast<CGameUserUI*>(m_PaintManager.FindControl(L"Rival"));
 }
 
 LRESULT CGameFrameWnd::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -100,7 +165,7 @@ LRESULT CGameFrameWnd::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &b
 	m_PaintManager.Init(m_hWnd);
 	CDialogBuilder builder;
 	// CDialogBuilderCallbackEx cb;
-	CControlUI* pRoot = builder.Create(_T("skin.xml"), (UINT)0, NULL, &m_PaintManager);
+	CControlUI* pRoot = builder.Create(_T("game.xml"), (UINT)0, NULL, &m_PaintManager);
 	ASSERT(pRoot && "Failed to parse XML");
 	m_PaintManager.AttachDialog(pRoot);
 	m_PaintManager.AddNotifier(this);
@@ -229,4 +294,103 @@ LRESULT CGameFrameWnd::OnSysCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 		}
 	}
 	return lRes;
+}
+
+BOOL CGameFrameWnd::IsPtInRect(POINT &pt, RECT &rc)
+{
+	return ((pt.x >= rc.left) && (pt.x <= rc.right) && (pt.y >= rc.top) && (pt.y <= rc.bottom));
+}
+
+void CGameFrameWnd::Startup(const UserProfile &user, const UserProfile &rival)
+{
+	if (!m_pUser)
+	{
+		m_pUser = static_cast<CGameUserUI*>(m_PaintManager.FindControl(L"User"));
+	}
+	if (!m_pRival)
+	{
+		m_pRival = static_cast<CGameUserUI*>(m_PaintManager.FindControl(L"Rival"));
+	}
+	
+	m_pUser->SetUserProfile(user);
+	m_pUser->SetReady();
+	m_pUser->StartRound();
+	m_pRival->SetUserProfile(rival);
+}
+
+BOOL CGameFrameWnd::InBoardPointArea(TNotifyUI &msg)
+{
+	RECT rcBoard = static_cast<CControlUI*>(m_PaintManager.FindControl(L"Board"))->GetPos();
+	if (!IsPtInRect(msg.ptMouse, rcBoard))
+	{
+		return false;
+	}
+
+	RECT rcWrapper = static_cast<CControlUI*>(m_PaintManager.FindControl(L"BoardWrapper"))->GetPos();
+	LONG rtLeft = msg.ptMouse.x - rcWrapper.left;
+	LONG rtTop = msg.ptMouse.y - rcWrapper.top;
+	UINT dx = (UINT)((rtLeft - BOARD_PT_START) * 1.0 / BOARD_PT_INTERVAL + 0.5);
+	UINT dy = (UINT)((rtTop - BOARD_PT_START) * 1.0 / BOARD_PT_INTERVAL + 0.5);
+	LONG dLeft = dx * BOARD_PT_INTERVAL + BOARD_PT_START;
+	LONG dTop = dy * BOARD_PT_INTERVAL + BOARD_PT_START;
+
+	return ((abs(dLeft - rtLeft) <= BOARD_PT_OFFSET) && (abs(dTop - rtTop) <= BOARD_PT_OFFSET));
+}
+
+BOOL CGameFrameWnd::GetBoardCoordinate(TNotifyUI &msg, POINT &pt)
+{
+	if (!InBoardPointArea(msg))
+	{
+		return false;
+	}
+
+	RECT rcWrapper = static_cast<CControlUI*>(m_PaintManager.FindControl(L"BoardWrapper"))->GetPos();
+	LONG rtLeft = msg.ptMouse.x - rcWrapper.left;
+	LONG rtTop = msg.ptMouse.y - rcWrapper.top;
+	pt.x = (UINT)((rtLeft - BOARD_PT_START) * 1.0 / BOARD_PT_INTERVAL + 0.5);
+	pt.y = (UINT)((rtTop - BOARD_PT_START) * 1.0 / BOARD_PT_INTERVAL + 0.5);
+
+	return true;
+}
+
+BOOL CGameFrameWnd::IsCurrentPointAvailable(TNotifyUI &msg)
+{
+
+	CControlUI* pControl = static_cast<CControlUI*>(m_PaintManager.FindControl(msg.ptMouse));
+	RECT rcWrapper = static_cast<CControlUI*>(m_PaintManager.FindControl(L"BoardWrapper"))->GetPos();
+	RECT rcBoard = static_cast<CControlUI*>(m_PaintManager.FindControl(L"Board"))->GetPos();
+
+	POINT pt;
+	return (GetBoardCoordinate(msg, pt) && (m_pGobangManager->IsPointAvailable(pt)));
+}
+
+void CGameFrameWnd::ShowWaitingPiece(TNotifyUI &msg)
+{
+	RECT rcWrapper = static_cast<CControlUI*>(m_PaintManager.FindControl(L"BoardWrapper"))->GetPos();
+	CControlUI* pWhitePiece = static_cast<CControlUI*>(m_PaintManager.FindControl(L"WhitePieceWait"));
+	
+	POINT pt;
+	if (!GetBoardCoordinate(msg, pt))
+	{
+		return;
+	}
+
+	LONG dwPieceWidth = pWhitePiece->GetWidth();
+	LONG dwPieceHeight = pWhitePiece->GetHeight();
+	LONG ptLeft = pt.x * BOARD_PT_INTERVAL + BOARD_PT_START;
+	LONG ptTop = pt.y * BOARD_PT_INTERVAL + BOARD_PT_START;
+
+	RECT rcPiece;
+	rcPiece.left = rcWrapper.left + ptLeft - dwPieceWidth / 2;
+	rcPiece.top = rcWrapper.top + ptTop - dwPieceHeight / 2;
+	rcPiece.right = rcPiece.left + dwPieceWidth;
+	rcPiece.bottom = rcPiece.top + dwPieceHeight;
+	pWhitePiece->SetPos(rcPiece);
+	pWhitePiece->SetVisible(true);
+}
+
+void CGameFrameWnd::HideWaitingPiece()
+{
+	CControlUI* pWhitePiece = static_cast<CControlUI*>(m_PaintManager.FindControl(L"WhitePieceWait"));
+	pWhitePiece->SetVisible(false);
 }

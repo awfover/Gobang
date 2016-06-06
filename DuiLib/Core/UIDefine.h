@@ -63,6 +63,7 @@ union DuiMessageMapFunctions
 #define DUI_MSGTYPE_BUTTONDOWN 		   	   (_T("buttondown"))
 #define DUI_MSGTYPE_MOUSEENTER			   (_T("mouseenter"))
 #define DUI_MSGTYPE_MOUSELEAVE			   (_T("mouseleave"))
+#define DUI_MSGTYPE_MOUSEMOVE			   (_T("mousemove"))
 
 #define DUI_MSGTYPE_TEXTCHANGED            (_T("textchanged"))
 #define DUI_MSGTYPE_HEADERCLICK            (_T("headerclick"))

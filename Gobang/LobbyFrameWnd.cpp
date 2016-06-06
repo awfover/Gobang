@@ -1,9 +1,10 @@
 #include "LobbyFrameWnd.h"
 
 
-
-CLobbyFrameWnd::CLobbyFrameWnd()
+CLobbyFrameWnd::CLobbyFrameWnd(CGobangManager *pGobangManager)
 {
+	m_pGobangManager = pGobangManager;
+	m_DialogBuilder.Create(L"UserListItem.xml", (UINT)0, NULL, &m_PaintManager);
 }
 
 
@@ -37,6 +38,13 @@ void CLobbyFrameWnd::Notify(TNotifyUI &msg)
 		else if (dsControlName == L"BtnClose")
 		{
 			PostQuitMessage(0);
+			return;
+		}
+		else if (dsControlName == L"ItemInvite")
+		{
+			LPCTSTR szIndex = msg.pSender->GetUserData().GetData();
+			UINT uIndex = _ttoi(szIndex);
+			m_pGobangManager->TryInviteUser(m_OnlineUserList.at(uIndex));
 			return;
 		}
 	}
@@ -229,4 +237,42 @@ LRESULT CLobbyFrameWnd::OnSysCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 		}
 	}
 	return lRes;
+}
+
+void CLobbyFrameWnd::Update(const UserProfile &user, const vector<UserProfile> &list)
+{
+	UpdateUserProfile(user);
+	UpdateOnlineUserList(list);
+}
+
+void CLobbyFrameWnd::UpdateUserProfile(const UserProfile &user)
+{
+	m_UserProfile = user;
+	static_cast<CControlUI*>(m_PaintManager.FindControl(_T("UserAvatar")))->SetBkImage(m_UserProfile.GetAvatar(L"lg"));
+	static_cast<CControlUI*>(m_PaintManager.FindControl(_T("UserName")))->SetText(m_UserProfile.GetName());
+	static_cast<CControlUI*>(m_PaintManager.FindControl(_T("UserIP")))->SetText(m_UserProfile.GetIp());
+	static_cast<CControlUI*>(m_PaintManager.FindControl(_T("UserTotalGames")))->SetText(m_UserProfile.GetTotalGames());
+	static_cast<CControlUI*>(m_PaintManager.FindControl(_T("UserWinProbility")))->SetText(m_UserProfile.GetWinProbility());
+}
+
+void CLobbyFrameWnd::UpdateOnlineUserList(const vector<UserProfile> &list)
+{
+	static_cast<CListUI*>(m_PaintManager.FindControl(_T("UserList")))->RemoveAll();
+
+	m_OnlineUserList = list;
+	UINT index = 0;
+	for (auto i = m_OnlineUserList.begin(); i != m_OnlineUserList.end(); i++)
+	{
+		CControlUI *pItem = static_cast<CControlUI*>(m_DialogBuilder.Create(NULL, &m_PaintManager));
+		static_cast<CControlUI*>(m_PaintManager.FindSubControlByName(pItem, _T("ItemAvatar")))->SetBkImage(i->GetAvatar(L"sm"));
+		static_cast<CControlUI*>(m_PaintManager.FindSubControlByName(pItem, _T("ItemName")))->SetText(i->GetName());
+		static_cast<CControlUI*>(m_PaintManager.FindSubControlByName(pItem, _T("ItemIP")))->SetText(i->GetIp());
+		static_cast<CControlUI*>(m_PaintManager.FindSubControlByName(pItem, _T("ItemWinProbility")))->SetText(i->GetWinProbility());
+
+		LPTSTR szIndex = new WCHAR[5];
+		wsprintf(szIndex, L"%u", index++);
+		static_cast<CControlUI*>(m_PaintManager.FindSubControlByName(pItem, _T("ItemInvite")))->SetUserData(szIndex);
+		
+		static_cast<CListUI*>(m_PaintManager.FindControl(_T("UserList")))->Add(pItem);
+	}
 }

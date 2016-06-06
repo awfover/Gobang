@@ -16,7 +16,6 @@ public:
 
 	void OnFinalMessage(HWND /*hWnd*/);
 
-
 	LRESULT OnNcActivate(UINT, WPARAM, LPARAM, BOOL &);
 	LRESULT OnNcCalcSize(UINT, WPARAM, LPARAM, BOOL &);
 	LRESULT OnNcPaint(UINT, WPARAM, LPARAM, BOOL &);

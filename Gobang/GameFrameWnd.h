@@ -1,15 +1,25 @@
 #pragma once
 #include "StdAfx.h"
+#include "GobangManager.h"
+#include "GameUserUI.h"
+
+#define BOARD_PT_START 27
+#define BOARD_PT_INTERVAL 39
+#define BOARD_PT_OFFSET 16
+
+class CGobangManager;
 
 class CGameFrameWnd :
-	public CWindowWnd,
-	public INotifyUI
+	public CWindowWnd
 {
 public:
-	CGameFrameWnd();
+	CGameFrameWnd(CGobangManager *lpGobangManager);
 
 	LPCTSTR GetWindowClassName() const;
 	void Notify(TNotifyUI &);
+
+	void InitWindow();
+	CControlUI* CreateControl(LPCTSTR pstrClassName);
 
 	void OnFinalMessage(HWND /*hWnd*/);
 
@@ -29,7 +39,22 @@ public:
 
 	LRESULT HandleMessage(UINT, WPARAM, LPARAM);
 
+	void Startup(const UserProfile &, const UserProfile &);
+
+	BOOL InBoardPointArea(TNotifyUI &);
+	BOOL GetBoardCoordinate(TNotifyUI &, POINT &);
+	BOOL IsCurrentPointAvailable(TNotifyUI &);
+
+	void ShowWaitingPiece(TNotifyUI &);
+	void HideWaitingPiece();
+
+	BOOL IsPtInRect(POINT &, RECT &);
+
 private:
 	CPaintManagerUI m_PaintManager;
+	CGobangManager *m_pGobangManager;
+
+	CGameUserUI *m_pUser;
+	CGameUserUI *m_pRival;
 };
 

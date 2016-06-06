@@ -1,12 +1,18 @@
 #pragma once
 #include "StdAfx.h"
+#include "GobangManager.h"
+#include <vector>
+
+using namespace std;
+
+class CGobangManager;
 
 class CLobbyFrameWnd :
 	public CWindowWnd,
 	public INotifyUI
 {
 public:
-	CLobbyFrameWnd();
+	CLobbyFrameWnd(CGobangManager *lpGobangManager);
 
 	LPCTSTR GetWindowClassName() const;
 	void Notify(TNotifyUI &);
@@ -29,7 +35,16 @@ public:
 
 	LRESULT HandleMessage(UINT, WPARAM, LPARAM);
 
+	void Update(const UserProfile &, const vector<UserProfile> &);
+	void UpdateUserProfile(const UserProfile &);
+	void UpdateOnlineUserList(const vector<UserProfile> &);
+
 private:
 	CPaintManagerUI m_PaintManager;
+	CGobangManager *m_pGobangManager;
+	CDialogBuilder m_DialogBuilder;
+
+	UserProfile m_UserProfile;
+	vector<UserProfile> m_OnlineUserList;
 };
 

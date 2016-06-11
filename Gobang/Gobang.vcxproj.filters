@@ -39,6 +39,9 @@
     <ClInclude Include="GameUserUI.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="GameBoard.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GobangApp.cpp">
@@ -63,6 +66,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="GameUserUI.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameBoard.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

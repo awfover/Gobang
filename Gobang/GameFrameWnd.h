@@ -7,10 +7,18 @@
 #define BOARD_PT_INTERVAL 39
 #define BOARD_PT_OFFSET 16
 
+#define PIECE_SIZE 45
+#define PIECE_WAIT_SIZE 33
+#define PIECE_WHITE_IMAGE L"res\\white-piece.png"
+#define PIECE_BLACK_IMAGE L"res\\black-piece.png"
+
+#define PIECE_WHITE_WAIT L"WhitePieceWait"
+#define PIECE_BLACK_WAIT L"BlackPieceWait"
+
 class CGobangManager;
 
 class CGameFrameWnd :
-	public CWindowWnd
+	public WindowImplBase
 {
 public:
 	CGameFrameWnd(CGobangManager *lpGobangManager);
@@ -18,43 +26,48 @@ public:
 	LPCTSTR GetWindowClassName() const;
 	void Notify(TNotifyUI &);
 
+	CDuiString GetSkinFile();
+	CDuiString GetSkinFolder();
+
 	void InitWindow();
 	CControlUI* CreateControl(LPCTSTR pstrClassName);
+	CPaintManagerUI* GetMainWndPaintManager();
 
 	void OnFinalMessage(HWND /*hWnd*/);
 
-
-	LRESULT OnNcActivate(UINT, WPARAM, LPARAM, BOOL &);
-	LRESULT OnNcCalcSize(UINT, WPARAM, LPARAM, BOOL &);
-	LRESULT OnNcPaint(UINT, WPARAM, LPARAM, BOOL &);
-	LRESULT OnNcHitTest(UINT, WPARAM, LPARAM, BOOL &);
-
-	LRESULT OnCreate(UINT, WPARAM, LPARAM, BOOL &);
-	LRESULT OnClose(UINT, WPARAM, LPARAM, BOOL &);
-	LRESULT OnDestroy(UINT, WPARAM, LPARAM, BOOL &);
-
-	LRESULT OnSize(UINT, WPARAM, LPARAM, BOOL &);
-	LRESULT OnGetMinMaxInfo(UINT, WPARAM, LPARAM, BOOL &);
-	LRESULT OnSysCommand(UINT, WPARAM, LPARAM, BOOL &);
-
-	LRESULT HandleMessage(UINT, WPARAM, LPARAM);
-
 	void Startup(const UserProfile &, const UserProfile &);
 
-	BOOL InBoardPointArea(TNotifyUI &);
-	BOOL GetBoardCoordinate(TNotifyUI &, POINT &);
-	BOOL IsCurrentPointAvailable(TNotifyUI &);
+	bool IsPtInRect(POINT &, RECT &);
+
+	void SetReady(bool = false);
+	void SetGameStart();
+	void PlacePiece(POINT &);
+	void SetPieceOrder(bool);
+
+private:
+	void ClearBoard();
+	void UpdateButton();
+
+	bool InBoardPointArea(TNotifyUI &);
+	bool GetBoardCoordinate(TNotifyUI &, POINT &);
+	bool IsCurrentPointAvailable(TNotifyUI &);
+
+	void PlacePiece(TNotifyUI &);
+	void PlacePiece(POINT &, PIECE_TYPE);
+
+	LPCTSTR GetPieceImage(PIECE_TYPE);
+	LPCTSTR GetWaitPieceName();
 
 	void ShowWaitingPiece(TNotifyUI &);
 	void HideWaitingPiece();
 
-	BOOL IsPtInRect(POINT &, RECT &);
-
-private:
-	CPaintManagerUI m_PaintManager;
 	CGobangManager *m_pGobangManager;
 
 	CGameUserUI *m_pUser;
 	CGameUserUI *m_pRival;
+
+	bool m_IsReady;
+	bool m_IsInGame;
+	bool m_IsInRound;
 };
 

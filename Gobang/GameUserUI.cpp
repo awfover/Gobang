@@ -1,7 +1,8 @@
 #include "GameUserUI.h"
 
 
-CGameUserUI::CGameUserUI() :
+CGameUserUI::CGameUserUI(CPaintManagerUI &PaintManager) :
+	m_PaintManager(PaintManager),
 	m_UserProfile(),
 	m_RemainSecs(0),
 	m_WinTimes(0),
@@ -27,6 +28,11 @@ LPVOID CGameUserUI::GetInterface(LPCTSTR pstrName)
 	}
 }
 
+CControlUI *CGameUserUI::CreateControl(LPCTSTR pstrName)
+{
+	return NULL;
+}
+
 void CGameUserUI::DoEvent(TEventUI &event)
 {
 	if (event.Type == UIEVENT_TIMER)
@@ -34,7 +40,7 @@ void CGameUserUI::DoEvent(TEventUI &event)
 		m_RemainSecs -= 1;
 		UpdateRemainSecs();
 
-		if (m_RemainSecs)
+		if (m_RemainSecs == 0)
 		{
 			m_pManager->KillTimer(this);
 		}
@@ -60,7 +66,8 @@ void CGameUserUI::UpdateProfile()
 void CGameUserUI::UpdateRemainSecs()
 {
 	LPTSTR szRemainSecs = new WCHAR[20];
-	wsprintf(szRemainSecs, L"倒计时  %02u:%02u", m_RemainSecs / 60, m_RemainSecs % 60);
+	// wsprintf(szRemainSecs, L"倒计时  %02u:%02u", m_RemainSecs / 60, m_RemainSecs % 60);
+	wsprintf(szRemainSecs, L"%02u:%02u", m_RemainSecs / 60, m_RemainSecs % 60);
 	static_cast<CControlUI*>(m_pManager->FindSubControlByName(this, L"ItemRemainSecs"))->SetText(szRemainSecs);
 	delete szRemainSecs;
 }
@@ -68,7 +75,8 @@ void CGameUserUI::UpdateRemainSecs()
 void CGameUserUI::UpdateWinTimes()
 {
 	LPTSTR szWinTimes = new WCHAR[10];
-	wsprintf(szWinTimes, L"比分  %u", m_WinTimes);
+	// wsprintf(szWinTimes, L"比分  %u", m_WinTimes);
+	wsprintf(szWinTimes, L"%u", m_WinTimes);
 	static_cast<CControlUI*>(m_pManager->FindSubControlByName(this, L"ItemWinTimes"))->SetText(szWinTimes);
 	delete szWinTimes;
 }
@@ -89,6 +97,11 @@ void CGameUserUI::SetUserProfile(const UserProfile &user)
 	Update();
 }
 
+void CGameUserUI::SetPieceType(PIECE_TYPE type)
+{
+	m_PieceType = type;
+}
+
 void CGameUserUI::SetReady()
 {
 	m_IsReady = true;
@@ -103,4 +116,9 @@ void CGameUserUI::StartRound()
 void CGameUserUI::EndRound()
 {
 	m_pManager->KillTimer(this);
+}
+
+PIECE_TYPE CGameUserUI::GetPieceType()
+{
+	return m_PieceType;
 }

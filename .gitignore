@@ -8,3 +8,4 @@ UnicodeRelease
 build
 .vs
 *.sdf
+Gobang.VC.opendb

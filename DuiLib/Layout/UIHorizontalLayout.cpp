@@ -201,7 +201,7 @@ namespace DuiLib
 					ptLastMouse = event.ptMouse;
 					m_rcNewPos = m_rcItem;
 					if( !m_bImmMode && m_pManager ) m_pManager->AddPostPaint(this);
-					return;
+					// return;
 				}
 			}
 			if( event.Type == UIEVENT_BUTTONUP )
@@ -211,7 +211,7 @@ namespace DuiLib
 					m_rcItem = m_rcNewPos;
 					if( !m_bImmMode && m_pManager ) m_pManager->RemovePostPaint(this);
 					NeedParentUpdate();
-					return;
+					// return;
 				}
 			}
 			if( event.Type == UIEVENT_MOUSEMOVE )
@@ -260,7 +260,7 @@ namespace DuiLib
 						rcInvalidate.Join(GetThumbRect(false));
 						if( m_pManager ) m_pManager->Invalidate(rcInvalidate);
 					}
-					return;
+					// return;
 				}
 			}
 			if( event.Type == UIEVENT_SETCURSOR )

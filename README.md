@@ -2,7 +2,7 @@
 
 A gobang game which can be played within local area network.
 
-## screenshots
+## Screenshots
 
 ![](http://ohwcpr4qg.bkt.clouddn.com/welcome.png)
 
